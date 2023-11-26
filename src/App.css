@@ -1,0 +1,16 @@
+.split h1{
+  text-align: center;
+}
+.split div{
+  background-color: antiquewhite;
+  text-align: center;
+}
+
+ul{
+  list-style: none;
+}
+ul li{
+  display: inline-grid;
+  line-height: 25px;
+  font-size: 20px;
+}
