@@ -46,6 +46,14 @@ function App() {
     setIsOpenAddFriend(false);
   }
 
+  function onSplitBill(value) {
+    setFriends(prevFriends => 
+        prevFriends.map(friend => friend.id === selectedFriend.id ? { ...friend, money: friend.money + value } : friend
+        ));
+
+        setSelectedFriend(null);
+  }
+
   return (
     <div className='split'>
       <h1>Eat-N-Split</h1>
@@ -56,7 +64,7 @@ function App() {
         />
       </div>
       <div>
-        {selectedFriend && <SplitPrice selectedFriend={selectedFriend} />}
+        {selectedFriend && <SplitPrice selectedFriend={selectedFriend} onSplitBill={onSplitBill} />}
       </div>
     </div>
   );
@@ -93,6 +101,9 @@ function Friend({ friendsList, handleSelectedFriend, selectedFriend }) {
               {friends.money < 0 && (
                 <span key={friends.id}>You owes {friends.name} {Math.round(friends.money)}</span>
               )}
+              {friends.money === 0 && (
+                <span key={friends.id}>You and {friends.name} are even.</span>
+              )}
               {friends.money > 0 && (
                 <span key={friends.id}>{friends.name} owes you {Math.round(friends.money)}</span>
               )}
@@ -121,7 +132,7 @@ function AddFriendForm({ handleAddFriend }) {
     const newFriend = {
       id: getRandomId(),
       name: name,
-      price: 0
+      money: 0
     };
 
     handleAddFriend(newFriend);
@@ -145,19 +156,27 @@ function AddFriendForm({ handleAddFriend }) {
 }
 
 
-function SplitPrice({ selectedFriend }) {
+function SplitPrice({ selectedFriend, onSplitBill }) {
   const [bill, setBill] = useState("");
   const [paidByUser, setPaidByUser] = useState("");
   const [whoIsPaying, setWhoIsPaying] = useState("user")
+  const paidByFriend = bill ? bill - paidByUser : "";
+
+  function handleSubmit() {
+    if (!bill || !paidByUser) return;
+    onSplitBill(whoIsPaying === 'user' ? paidByFriend : -paidByUser);
+
+  }
+
 
   return (
     <div>
       <h2>
         SPLIT A BILL WITH {selectedFriend.name}
       </h2>
-      Bill Value <input value={bill} onChange={(e) => setBill(e.target.value)} ></input>
-      Your Expense <input value={paidByUser} onChange={(e) => setPaidByUser(e.target.value)} ></input>
-      {selectedFriend.name}  Expense <input name="XExpense" disabled></input>
+      Bill Value <input type='text' value={bill} onChange={(e) => setBill(Number(e.target.value))} ></input>
+      Your Expense <input type='text' value={paidByUser} onChange={(e) => setPaidByUser(Number(e.target.value) > bill ? paidByUser : Number(e.target.value))} ></input>
+      {selectedFriend.name}  Expense <input type='text' value={paidByFriend} disabled></input>
       Who is paying the bill
       <select style={{ width: '100px', textAlign: 'center' }}
         value={whoIsPaying} onChange={(e) => setWhoIsPaying(e.target.value)}>
@@ -166,9 +185,10 @@ function SplitPrice({ selectedFriend }) {
       </select> <br />
       <br />
       <br />
-      <button>Split</button>
+      <button onClick={handleSubmit}>Split</button>
     </div>
   );
+  // () => {handleSplitAmount(selectedFriend,paidByFriend)}
 }
 
 export default App;
